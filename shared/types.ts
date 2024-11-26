@@ -1,5 +1,5 @@
 import type { colors } from "unocss/preset-mini"
-import type { columnIds } from "./metadata"
+import type { columns, fixedColumnIds } from "./metadata"
 import type { originSources } from "./sources"
 
 export type Color = "primary" | Exclude<keyof typeof colors, "current" | "inherit" | "transparent" | "black" | "white">
@@ -11,7 +11,7 @@ export type SourceID = {
   [Key in MainSourceID]: ConstSources[Key] extends { disable?: true } ? never :
     ConstSources[Key] extends { sub?: infer SubSource } ? {
     // @ts-expect-error >_<
-      [SubKey in keyof SubSource ]: SubSource[SubKey] extends { disable?: true } ? never : `${Key}-${SubKey}`
+      [SubKey in keyof SubSource]: SubSource[SubKey] extends { disable?: true } ? never : `${Key}-${SubKey}`
     }[keyof SubSource] | Key : Key;
 }[MainSourceID]
 
@@ -24,44 +24,58 @@ export type AllSourceID = {
 
 // export type DisabledSourceID = Exclude<SourceID, MainSourceID>
 
-export type ColumnID = (typeof columnIds)[number]
+export type ColumnID = keyof typeof columns
 export type Metadata = Record<ColumnID, Column>
 
 export interface PrimitiveMetadata {
   updatedTime: number
-  data: Record<ColumnID, SourceID[]>
+  data: Record<FixedColumnID, SourceID[]>
   action: "init" | "manual" | "sync"
 }
 
-export interface OriginSource {
+export type FixedColumnID = (typeof fixedColumnIds)[number]
+export type HiddenColumnID = Exclude<ColumnID, FixedColumnID>
+
+export interface OriginSource extends Partial<Omit<Source, "name" | "redirect">> {
   name: string
-  title?: string
-  /**
-   * 刷新的间隔时间，复用缓存
-   */
-  interval?: number
-  type?: "hottest" | "realtime"
-  /**
-   * @default false
-   */
-  disable?: boolean
-  home: string
-  color?: Color
   sub?: Record<string, {
+    /**
+     * Subtitle 小标题
+     */
     title: string
-    type?: "hottest" | "realtime"
-    disable?: boolean
-    interval?: number
-  }>
+    // type?: "hottest" | "realtime"
+    // desc?: string
+    // column?: ManualColumnID
+    // color?: Color
+    // home?: string
+    // disable?: boolean
+    // interval?: number
+  } & Partial<Omit<Source, "title" | "name" | "redirect">>>
 }
 
 export interface Source {
   name: string
-  title?: string
-  type?: "hottest" | "realtime"
-  color: Color
-  disable?: boolean
+  /**
+   * 刷新的间隔时间
+   */
   interval: number
+  color: Color
+
+  /**
+   * Subtitle 小标题
+   */
+  title?: string
+  desc?: string
+  /**
+   * Default normal timeline
+   */
+  type?: "hottest" | "realtime"
+  column?: HiddenColumnID
+  home?: string
+  /**
+   * @default false
+   */
+  disable?: boolean
   redirect?: SourceID
 }
 
@@ -76,11 +90,21 @@ export interface NewsItem {
   url: string
   mobileUrl?: string
   pubDate?: number | string
-  extra?: Record<string, any>
+  extra?: {
+    hover?: string
+    date?: number | string
+    info?: false | string
+    diff?: number
+    icon?: false | string | {
+      url: string
+      scale: number
+    }
+  }
 }
 
 export interface SourceResponse {
   status: "success" | "cache"
+  id: SourceID
   updatedTime: number | string
   items: NewsItem[]
 }

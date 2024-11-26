@@ -27,16 +27,19 @@ interface Res {
 
 export default defineSource(async () => {
   const url = "https://weibo.com/ajax/side/hotSearch"
-  const res: Res = await $fetch(url)
+  const res: Res = await myFetch(url)
   return res.data.realtime
     .filter(k => !k.is_ad)
     .map((k) => {
       const keyword = k.word_scheme ? k.word_scheme : `#${k.word}#`
       return {
-        id: k.num,
+        id: k.word,
         title: k.word,
         extra: {
-          icon: k.icon,
+          icon: k.icon && {
+            url: proxyPicture(k.icon),
+            scale: 1.5,
+          },
         },
         url: `https://s.weibo.com/weibo?q=${encodeURIComponent(keyword)}`,
         mobileUrl: `https://m.weibo.cn/search?containerid=231522type%3D1%26q%3D${encodeURIComponent(keyword)}&_T_WM=16922097837&v_p=42`,
