@@ -65,10 +65,6 @@ export function Menu() {
                     </li>
                   ))}
               <ThemeToggle />
-              <li onClick={() => window.open(Homepage)} className="cursor-pointer [&_*]:cursor-pointer transition-all">
-                <span className="i-ph:github-logo-duotone inline-block" />
-                <span>Star on Github </span>
-              </li>
               <li className="flex gap-2 items-center">
                 <a
                   href="https://github.com/ourongxing/newsnow"
