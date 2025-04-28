@@ -35,7 +35,6 @@ export function Menu() {
             : <button type="button" className="btn i-si:more-muted-horiz-circle-duotone" />
         }
       </span>
-      <ThemeToggle />
       {shown && (
         <div className="absolute right-0 z-99 bg-transparent pt-4 top-4">
           <motion.div
@@ -54,6 +53,7 @@ export function Menu() {
           </motion.div>
         </div>
       )}
+      <ThemeToggle />
     </span>
   )
 }
